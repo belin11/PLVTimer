@@ -8,7 +8,7 @@
 
 #import "PLVTimer.h"
 
-dispatch_source_t CreateDispatchTimer(double interval, dispatch_queue_t queue, dispatch_block_t block){
+dispatch_source_t CreatePLVDispatchTimer(double interval, dispatch_queue_t queue, dispatch_block_t block){
 	dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
 	if (timer){
 		dispatch_source_set_timer(timer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, 1ull / 10 * NSEC_PER_SEC);
@@ -51,7 +51,7 @@ dispatch_source_t CreateDispatchTimer(double interval, dispatch_queue_t queue, d
 	PLVTimer *repeat = [[self alloc] init];
 	dispatch_queue_t globalQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 	repeat.currentInterval = 0;
-	repeat.timer = CreateDispatchTimer(interval, globalQueue, ^{
+	repeat.timer = CreatePLVDispatchTimer(interval, globalQueue, ^{
 		repeat.currentInterval += interval;
 		if (repeatBlock) repeatBlock();
 	});
@@ -103,7 +103,7 @@ dispatch_source_t CreateDispatchTimer(double interval, dispatch_queue_t queue, d
 - (void)countdownWithSecond:(long)second countBlock:(void (^)(long remainSecond))countBlock{
 	__block long remainSecond = second;
 	dispatch_queue_t globalQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-	self.timer = CreateDispatchTimer(1, globalQueue, ^{
+	self.timer = CreatePLVDispatchTimer(1, globalQueue, ^{
 		if (remainSecond <= 0) [self cancel];
 		dispatch_sync(dispatch_get_main_queue(), ^{
 			countBlock(remainSecond);
@@ -116,7 +116,7 @@ dispatch_source_t CreateDispatchTimer(double interval, dispatch_queue_t queue, d
 - (void)timerWithInterval:(double)interval dispatchQueue:(dispatch_queue_t)queue countdownSecond:(long)second countBlock:(void (^)(long remainSecond))countBlock{
 	__block long remainSecond = second;
 	if (!queue) queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-	self.timer = CreateDispatchTimer(interval, queue, ^{
+	self.timer = CreatePLVDispatchTimer(interval, queue, ^{
 		if (remainSecond <= 0) [self cancel];
 		countBlock(remainSecond);
 		remainSecond --;
